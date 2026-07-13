@@ -7,6 +7,7 @@ import ProblemDetailsStep from './components/steps/ProblemDetailsStep';
 import NstcRepStep from './components/steps/NstcRepStep';
 import ClientRepStep from './components/steps/ClientRepStep';
 import PdfTemplate from './components/PdfTemplate';
+import SwipeToConfirm from './components/SwipeToConfirm';
 
 const steps = [
   { component: ClientInfoStep, label: 'Client' },
@@ -17,9 +18,10 @@ const steps = [
 ];
 
 function FormFlow() {
+  const [showComplete, setShowComplete] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [loading, setLoading] = useState(false);
-  const { formData } = useFormData();
+  const { formData, resetForm } = useFormData();
   const StepComponent = steps[stepIndex].component;
   const isLastStep = stepIndex === steps.length - 1;
 
@@ -84,17 +86,33 @@ function FormFlow() {
     setLoading(false);
   };
 
+  const handleStartNew = () => {
+    resetForm();
+    setStepIndex(0);
+    setShowComplete(false);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
       {/* Sticky header */}
       <header className="sticky top-0 z-10 bg-white border-b border-border shadow-sm">
         <div className="max-w-md mx-auto px-4 pt-4 pb-3">
-          <div className="flex items-center gap-2 mb-3">
-            <img src="/NSTC_logo.png" alt="NSTC" className="h-8 w-auto object-contain" />
-            <div>
-              <h1 className="text-sm font-bold text-text-primary leading-tight">Service Report</h1>
-              <p className="text-xs text-text-secondary leading-tight">NGA Systems Technologies Corp.</p>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <img src="/NSTC_logo.png" alt="NSTC" className="h-8 w-auto object-contain" />
+              <div>
+                <h1 className="text-sm font-bold text-text-primary leading-tight">Service Report</h1>
+                <p className="text-xs text-text-secondary leading-tight">NGA Systems Technologies Corp.</p>
+              </div>
             </div>
+            {isLastStep && (
+              <button
+                onClick={() => setShowComplete(true)}
+                className="text-sm font-medium text-brand-600 active:text-brand-700"
+              >
+                Done
+              </button>
+            )}
           </div>
 
           {/* Progress bar */}
@@ -181,6 +199,12 @@ function FormFlow() {
           )}
         </div>
       </div>
+      {showComplete && (
+        <SwipeToConfirm
+          onConfirm={handleStartNew}
+          onCancel={() => setShowComplete(false)}
+        />
+      )}
     </div>
   );
 }

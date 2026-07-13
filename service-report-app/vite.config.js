@@ -12,12 +12,11 @@ export default defineConfig({
       includeAssets: ['NSTC_logo.png'],
       manifest: {
         name: 'NSTC Service Report',
-        short_name: 'NSTC Report',
+        short_name: 'NSTC ServiceReport',
         description: 'Digital service report form for NSTC field technicians',
         theme_color: '#15803D',
         background_color: '#ffffff',
         display: 'standalone',
-        orientation: 'portrait',
         start_url: '/',
         icons: [
           {

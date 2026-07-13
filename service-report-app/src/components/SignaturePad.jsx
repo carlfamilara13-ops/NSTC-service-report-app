@@ -1,6 +1,45 @@
 import { useRef } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 
+// Manually trims transparent whitespace from a canvas, since the library's
+// built-in getTrimmedCanvas() is broken on newer bundlers.
+function trimCanvas(canvas) {
+  const ctx = canvas.getContext('2d');
+  const { width, height } = canvas;
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const data = imageData.data;
+
+  let top = null, bottom = null, left = null, right = null;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const alpha = data[(y * width + x) * 4 + 3];
+      if (alpha > 0) {
+        if (top === null) top = y;
+        bottom = y;
+        if (left === null || x < left) left = x;
+        if (right === null || x > right) right = x;
+      }
+    }
+  }
+
+  if (top === null) return canvas; // blank canvas, nothing to trim
+
+  const padding = 10;
+  const trimX = Math.max(left - padding, 0);
+  const trimY = Math.max(top - padding, 0);
+  const trimWidth = Math.min(right + padding, width) - trimX;
+  const trimHeight = Math.min(bottom + padding, height) - trimY;
+
+  const trimmed = document.createElement('canvas');
+  trimmed.width = trimWidth;
+  trimmed.height = trimHeight;
+  trimmed.getContext('2d').drawImage(
+    canvas, trimX, trimY, trimWidth, trimHeight, 0, 0, trimWidth, trimHeight
+  );
+  return trimmed;
+}
+
 export default function SignaturePad({ onSave, onClose }) {
   const sigRef = useRef();
 
@@ -13,7 +52,9 @@ export default function SignaturePad({ onSave, onClose }) {
       alert('Please sign before saving.');
       return;
     }
-    const dataUrl = sigRef.current.toDataURL('image/png');
+    const rawCanvas = sigRef.current.getCanvas();
+    const trimmed = trimCanvas(rawCanvas);
+    const dataUrl = trimmed.toDataURL('image/png');
     onSave(dataUrl);
     onClose();
   };

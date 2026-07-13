@@ -48,8 +48,9 @@ const styles = StyleSheet.create({
   sigCol: { width: '50%', flexDirection: 'column' },
   sigSubRow: { borderBottomWidth: 1, borderColor: BORDER, minHeight: 30, flexDirection: 'row', alignItems: 'center' },
   sigSubRowLast: { minHeight: 22 },
-  sigImageBox: { flex: 1, alignItems: 'flex-end', paddingRight: 8 },
-  sigImageInline: { width: 95, height: 30, objectFit: 'contain' },
+  sigImageBox: { flex: 1, alignItems: 'flex-end', paddingRight: 4, position: 'relative', overflow: 'visible' },
+  sigImageNstc: { width: 140, height: 46, objectFit: 'contain', position: 'absolute', right: 2, top: -20 },
+  sigImageClient: { width: 140, height: 46, objectFit: 'contain', position: 'absolute', right: 2, top: -8 },
 });
 
 // Inserts an invisible break point into long unbroken strings (numbers, codes, etc.)
@@ -198,7 +199,7 @@ export default function PdfTemplate({ data }) {
               <View style={styles.sigSubRow}>
                 <Text style={styles.label}>Signature of Supervisor / Leadman:</Text>
                 <View style={styles.sigImageBox}>
-                  {data.nstcSignature && <Image src={data.nstcSignature} style={styles.sigImageInline} />}
+                  {data.nstcSignature && <Image src={data.nstcSignature} style={styles.sigImageNstc} />}
                 </View>
               </View>
               <View style={[styles.sigSubRow, styles.sigSubRowLast]}>
@@ -256,7 +257,7 @@ export default function PdfTemplate({ data }) {
             <View style={[styles.half, { minHeight: 32 }]}>
               <Text style={styles.label}>Signature:</Text>
               <View style={styles.sigImageBox}>
-                {data.clientSignature && <Image src={data.clientSignature} style={styles.sigImageInline} />}
+                {data.clientSignature && <Image src={data.clientSignature} style={styles.sigImageClient} />}
               </View>
             </View>
           </View>
