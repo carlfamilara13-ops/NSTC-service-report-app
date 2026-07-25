@@ -21,7 +21,12 @@ export function FormProvider({ children }) {
   });
 
   useEffect(() => {
-    localStorage.setItem('draftReport', JSON.stringify(formData));
+    try {
+      localStorage.setItem('draftReport', JSON.stringify(formData));
+    } catch (err) {
+      console.warn('Autosave failed (storage quota exceeded):', err);
+      // Data still exists in memory/state, just won't persist across refresh
+    }
   }, [formData]);
 
   const updateField = (key, value) =>

@@ -12,12 +12,30 @@ function detectOrientation(file) {
   });
 }
 
-function fileToDataUrl(file) {
+function compressImage(file, maxDimension = 1280, quality = 0.7) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+    const img = new window.Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > height && width > maxDimension) {
+        height = Math.round((height * maxDimension) / width);
+        width = maxDimension;
+      } else if (height >= width && height > maxDimension) {
+        width = Math.round((width * maxDimension) / height);
+        height = maxDimension;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      resolve({
+        dataUrl: canvas.toDataURL('image/jpeg', quality),
+        orientation: width >= height ? 'landscape' : 'portrait',
+      });
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
   });
 }
 
@@ -32,16 +50,13 @@ export default function PhotoUploadStep({ title, fieldName }) {
     const files = Array.from(e.target.files);
     const newPhotos = [];
     for (const file of files) {
-      const [dataUrl, orientation] = await Promise.all([
-        fileToDataUrl(file),
-        detectOrientation(file),
-      ]);
-      newPhotos.push({ id: crypto.randomUUID(), dataUrl, orientation });
+        const { dataUrl, orientation } = await compressImage(file);
+        newPhotos.push({ id: crypto.randomUUID(), dataUrl, orientation });
     }
     updateField(fieldName, [...photos, ...newPhotos]);
     e.target.value = '';
     setShowMenu(false);
-  };
+};
 
   const removePhoto = (id) => {
     updateField(fieldName, photos.filter((p) => p.id !== id));
