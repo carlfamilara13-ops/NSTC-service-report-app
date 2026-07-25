@@ -54,48 +54,53 @@ const styles = StyleSheet.create({
 });
 
 const photoStyles = StyleSheet.create({
-  photoPage: { padding: 20 },
-  photoPageTitle: { backgroundColor: GREEN, paddingVertical: 6, marginBottom: 14 },
-  photoPageTitleText: { color: '#fff', fontSize: 13, fontWeight: 'bold', textAlign: 'center', letterSpacing: 1 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  cellLandscape: { width: '48%', marginBottom: 14, borderWidth: 1, borderColor: BORDER, padding: 4 },
-  cellPortrait: { width: '48%', marginBottom: 14, borderWidth: 1, borderColor: BORDER, padding: 4 },
-  imgLandscape: { width: '100%', height: 170, objectFit: 'contain' },
-  imgPortrait: { width: '100%', height: 300, objectFit: 'contain' },
-  singleWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  singleLandscape: { width: '92%', height: 420, objectFit: 'contain' },
-  singlePortrait: { width: '70%', height: 620, objectFit: 'contain' },
-});
+    photoPage: { padding: 20 },
+    photoPageTitle: { backgroundColor: GREEN, paddingVertical: 6, marginBottom: 14 },
+    photoPageTitleText: { color: '#fff', fontSize: 13, fontWeight: 'bold', textAlign: 'center', letterSpacing: 1 },
+    grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+    cell: { width: '48%', height: 235, marginBottom: 14, borderWidth: 1, borderColor: BORDER, padding: 4, alignItems: 'center', justifyContent: 'center' },
+    cellImg: { width: '100%', height: '100%', objectFit: 'contain' },
+    singleWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    singleImg: { width: '90%', height: 480, objectFit: 'contain' },
+  });
 
-function chunk(arr, size) {
-  const out = [];
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
-  return out;
-}
+  function chunk(arr, size) {
+    const out = [];
+    for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+    return out;
+  }
 
-// Groups photos by orientation (so a page never mixes landscape/portrait),
-// then splits each orientation group into pages of up to 4 photos.
-function groupPhotosIntoPages(photos = []) {
-  const landscape = photos.filter((p) => p.orientation === 'landscape');
-  const portrait = photos.filter((p) => p.orientation === 'portrait');
-  const pages = [];
-  chunk(landscape, 4).forEach((group) => pages.push({ photos: group, orientation: 'landscape' }));
-  chunk(portrait, 4).forEach((group) => pages.push({ photos: group, orientation: 'portrait' }));
-  return pages;
-}
+  // Fits up to 4 photos per page regardless of orientation mix — each photo
+  // sits in a same-sized cell and scales to fit inside it, so nothing shrinks
+  // unpredictably and portrait/landscape can share a page.
+  function groupPhotosIntoPages(photos = []) {
+    return chunk(photos, 4).map((group) => ({ photos: group }));
+  }
 
-function PhotoPage({ title, photos, orientation }) {
-  if (photos.length === 1) {
+  function PhotoPage({ title, photos }) {
+    if (photos.length === 1) {
+      return (
+        <Page size="A4" style={photoStyles.photoPage}>
+          <View style={photoStyles.photoPageTitle}>
+            <Text style={photoStyles.photoPageTitleText}>{title}</Text>
+          </View>
+          <View style={photoStyles.singleWrap}>
+            <Image src={photos[0].dataUrl} style={photoStyles.singleImg} />
+          </View>
+        </Page>
+      );
+    }
     return (
       <Page size="A4" style={photoStyles.photoPage}>
         <View style={photoStyles.photoPageTitle}>
           <Text style={photoStyles.photoPageTitleText}>{title}</Text>
         </View>
-        <View style={photoStyles.singleWrap}>
-          <Image
-            src={photos[0].dataUrl}
-            style={orientation === 'landscape' ? photoStyles.singleLandscape : photoStyles.singlePortrait}
-          />
+        <View style={photoStyles.grid}>
+          {photos.map((p) => (
+            <View key={p.id} style={photoStyles.cell}>
+              <Image src={p.dataUrl} style={photoStyles.cellImg} />
+            </View>
+          ))}
         </View>
       </Page>
     );
