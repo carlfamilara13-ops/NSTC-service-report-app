@@ -105,6 +105,7 @@ const photoStyles = StyleSheet.create({
       </Page>
     );
   }
+  
   return (
     <Page size="A4" style={photoStyles.photoPage}>
       <View style={photoStyles.photoPageTitle}>
