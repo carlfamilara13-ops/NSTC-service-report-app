@@ -106,22 +106,6 @@ const photoStyles = StyleSheet.create({
     );
   }
   
-  return (
-    <Page size="A4" style={photoStyles.photoPage}>
-      <View style={photoStyles.photoPageTitle}>
-        <Text style={photoStyles.photoPageTitleText}>{title}</Text>
-      </View>
-      <View style={photoStyles.grid}>
-        {photos.map((p) => (
-          <View key={p.id} style={orientation === 'landscape' ? photoStyles.cellLandscape : photoStyles.cellPortrait}>
-            <Image src={p.dataUrl} style={orientation === 'landscape' ? photoStyles.imgLandscape : photoStyles.imgPortrait} />
-          </View>
-        ))}
-      </View>
-    </Page>
-  );
-}
-
 // Inserts an invisible break point into long unbroken strings (numbers, codes, etc.)
 // so they wrap inside their box instead of overflowing the page.
 function safeWrap(text = '') {
