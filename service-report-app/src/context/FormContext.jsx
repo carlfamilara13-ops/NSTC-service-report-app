@@ -10,6 +10,8 @@ const initialState = {
   clientRepName: '', clientRepContact: '', clientComments: '', clientDate: '',
   nstcSignature: null,
   clientSignature: null,
+  beforePhotos: [],
+  afterPhotos: [],
 };
 
 export function FormProvider({ children }) {

@@ -8,11 +8,16 @@ import NstcRepStep from './components/steps/NstcRepStep';
 import ClientRepStep from './components/steps/ClientRepStep';
 import PdfTemplate from './components/PdfTemplate';
 import SwipeToConfirm from './components/SwipeToConfirm';
+import BeforePhotosStep from './components/steps/BeforePhotosStep';
+import AfterPhotosStep from './components/steps/AfterPhotosStep';
+
 
 const steps = [
   { component: ClientInfoStep, label: 'Client' },
   { component: ServiceInfoStep, label: 'Service' },
   { component: ProblemDetailsStep, label: 'Problem' },
+  { component: BeforePhotosStep, label: 'Before' },
+  { component: AfterPhotosStep, label: 'After' },
   { component: NstcRepStep, label: 'NSTC Sign' },
   { component: ClientRepStep, label: 'Client Sign' },
 ];
