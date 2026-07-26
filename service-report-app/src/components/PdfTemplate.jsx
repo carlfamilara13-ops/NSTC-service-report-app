@@ -54,72 +54,108 @@ const styles = StyleSheet.create({
 });
 
 const photoStyles = StyleSheet.create({
-    photoPage: { padding: 20 },
-    photoPageTitle: { backgroundColor: GREEN, paddingVertical: 6, marginBottom: 14 },
-    photoPageTitleText: { color: '#fff', fontSize: 13, fontWeight: 'bold', textAlign: 'center', letterSpacing: 1 },
-    grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-    cell: { width: '48%', height: 235, marginBottom: 14, borderWidth: 1, borderColor: BORDER, padding: 4, alignItems: 'center', justifyContent: 'center' },
-    cellImg: { width: '100%', height: '100%', objectFit: 'contain' },
-    singleWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-    singleImg: { width: '90%', height: 480, objectFit: 'contain' },
-  });
+  photoPage: { padding: 20 },
+  photoPageTitle: { backgroundColor: GREEN, paddingVertical: 6, marginBottom: 14 },
+  photoPageTitleText: { color: '#fff', fontSize: 13, fontWeight: 'bold', textAlign: 'center', letterSpacing: 1 },
 
-  function chunk(arr, size) {
-    const out = [];
-    for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
-    return out;
-  }
+  // 1 photo — big, centered
+  singleWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  singleImg: { width: '92%', height: 720, objectFit: 'contain' },
 
-  // Fits up to 4 photos per page regardless of orientation mix — each photo
-  // sits in a same-sized cell and scales to fit inside it, so nothing shrinks
-  // unpredictably and portrait/landscape can share a page.
-  function groupPhotosIntoPages(photos = []) {
-    return chunk(photos, 4).map((group) => ({ photos: group }));
-  }
+  // 2 portrait photos — side by side, tall
+  pairSideWrap: { flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  pairSideCell: { width: '48%', height: 700, borderWidth: 1, borderColor: BORDER, padding: 4, alignItems: 'center', justifyContent: 'center' },
+  pairSideImg: { width: '100%', height: '100%', objectFit: 'contain' },
 
-  function PhotoPage({ title, photos }) {
-    if (photos.length === 1) {
-      return (
-        <Page size="A4" style={photoStyles.photoPage}>
-          <View style={photoStyles.photoPageTitle}>
-            <Text style={photoStyles.photoPageTitleText}>{title}</Text>
+  // 2 landscape photos — stacked top/bottom
+  pairStackWrap: { flex: 1, flexDirection: 'column', justifyContent: 'space-between' },
+  pairStackCell: { width: '100%', height: 355, borderWidth: 1, borderColor: BORDER, padding: 4, alignItems: 'center', justifyContent: 'center' },
+  pairStackImg: { width: '100%', height: '100%', objectFit: 'contain' },
+
+  // 3-4 photos — quadrant grid, maximized
+  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  gridCell: { width: '48%', height: 355, marginBottom: 14, borderWidth: 1, borderColor: BORDER, padding: 4, alignItems: 'center', justifyContent: 'center' },
+  gridImg: { width: '100%', height: '100%', objectFit: 'contain' },
+});
+
+function chunk(arr, size) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
+// Splits photos into pages of up to 4 each.
+function groupPhotosIntoPages(photos = []) {
+  return chunk(photos, 4).map((group) => ({ photos: group }));
+}
+
+function PhotoPage({ title, photos }) {
+  const count = photos.length;
+  const allPortrait = photos.every((p) => p.orientation === 'portrait');
+  const allLandscape = photos.every((p) => p.orientation === 'landscape');
+
+  let body;
+
+  if (count === 1) {
+    body = (
+      <View style={photoStyles.singleWrap}>
+        <Image src={photos[0].dataUrl} style={photoStyles.singleImg} />
+      </View>
+    );
+  } else if (count === 2 && allPortrait) {
+    body = (
+      <View style={photoStyles.pairSideWrap}>
+        {photos.map((p) => (
+          <View key={p.id} style={photoStyles.pairSideCell}>
+            <Image src={p.dataUrl} style={photoStyles.pairSideImg} />
           </View>
-          <View style={photoStyles.singleWrap}>
-            <Image src={photos[0].dataUrl} style={photoStyles.singleImg} />
+        ))}
+      </View>
+    );
+  } else if (count === 2 && allLandscape) {
+    body = (
+      <View style={photoStyles.pairStackWrap}>
+        {photos.map((p) => (
+          <View key={p.id} style={photoStyles.pairStackCell}>
+            <Image src={p.dataUrl} style={photoStyles.pairStackImg} />
           </View>
-        </Page>
-      );
-    }
-    return (
-      <Page size="A4" style={photoStyles.photoPage}>
-        <View style={photoStyles.photoPageTitle}>
-          <Text style={photoStyles.photoPageTitleText}>{title}</Text>
-        </View>
-        <View style={photoStyles.grid}>
-          {photos.map((p) => (
-            <View key={p.id} style={photoStyles.cell}>
-              <Image src={p.dataUrl} style={photoStyles.cellImg} />
-            </View>
-          ))}
-        </View>
-      </Page>
+        ))}
+      </View>
+    );
+  } else if (count === 2) {
+    // Mixed orientation pair — default to side-by-side
+    body = (
+      <View style={photoStyles.pairSideWrap}>
+        {photos.map((p) => (
+          <View key={p.id} style={photoStyles.pairSideCell}>
+            <Image src={p.dataUrl} style={photoStyles.pairSideImg} />
+          </View>
+        ))}
+      </View>
+    );
+  } else {
+    // 3 or 4 photos — quadrant grid
+    body = (
+      <View style={photoStyles.grid}>
+        {photos.map((p) => (
+          <View key={p.id} style={photoStyles.gridCell}>
+            <Image src={p.dataUrl} style={photoStyles.gridImg} />
+          </View>
+        ))}
+      </View>
     );
   }
+
   return (
     <Page size="A4" style={photoStyles.photoPage}>
       <View style={photoStyles.photoPageTitle}>
         <Text style={photoStyles.photoPageTitleText}>{title}</Text>
       </View>
-      <View style={photoStyles.grid}>
-        {photos.map((p) => (
-          <View key={p.id} style={orientation === 'landscape' ? photoStyles.cellLandscape : photoStyles.cellPortrait}>
-            <Image src={p.dataUrl} style={orientation === 'landscape' ? photoStyles.imgLandscape : photoStyles.imgPortrait} />
-          </View>
-        ))}
-      </View>
+      {body}
     </Page>
   );
 }
+
 
 // Inserts an invisible break point into long unbroken strings (numbers, codes, etc.)
 // so they wrap inside their box instead of overflowing the page.
@@ -333,11 +369,11 @@ export default function PdfTemplate({ data }) {
       </Page>
 
       {groupPhotosIntoPages(data.beforePhotos).map((pg, i) => (
-        <PhotoPage key={`before-${i}`} title="BEFORE PHOTOS" photos={pg.photos} orientation={pg.orientation} />
+        <PhotoPage key={`before-${i}`} title="BEFORE PHOTOS" photos={pg.photos} />
       ))}
 
       {groupPhotosIntoPages(data.afterPhotos).map((pg, i) => (
-        <PhotoPage key={`after-${i}`} title="AFTER PHOTOS" photos={pg.photos} orientation={pg.orientation} />
+        <PhotoPage key={`after-${i}`} title="AFTER PHOTOS" photos={pg.photos} />
       ))}
     </Document>
   );
